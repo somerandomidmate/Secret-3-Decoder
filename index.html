@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Secret #3 Cipher Decoder</title>
+<style>
+body {
+    background:#141414;
+    color:#ffffff;
+    font-family: monospace;
+    padding:20px;
+}
+input, textarea, select, button {
+    width:100%;
+    margin:6px 0;
+    padding:8px;
+    background:#111;
+    color:#ffffff;
+    border:1px solid rgb(255, 255, 255);
+    font-family:monospace;
+}
+button:hover {
+    background:#002222;
+}
+.output {
+    background:#000;
+    padding:15px;
+    margin-top:15px;
+    white-space:pre-wrap;
+    border:1px solid #ffffff;
+}
+</style>
+</head>
+<body>
+
+<h2>Secret #3 Cipher Decoder</h2>
+
+<label>ASCII Numbers (space separated)</label>
+<textarea id="asciiInput" rows="3"></textarea>
+
+<label>Step Order (comma separated, example: Caesar,Affine,Beaufort,Vigenere)</label>
+<input id="orderInput" placeholder="Caesar,Affine,Beaufort,Vigenere">
+
+<hr>
+
+<label>Caesar Shift</label>
+<input type="number" id="caesarShift">
+
+<label>Affine A</label>
+<input type="number" id="affineA">
+
+<label>Affine B</label>
+<input type="number" id="affineB">
+
+<label>Beaufort Key</label>
+<input type="text" id="beaufortKey">
+
+<label>Vigenere Key</label>
+<input type="text" id="vigenereKey">
+
+<button onclick="decodeAll()">DECODE</button>
+
+<div class="output" id="output"></div>
+
+<script>
+function mod(n,m){ return ((n%m)+m)%m; }
+
+function asciiDecode(numbers){
+    return numbers.split(" ").map(n=>String.fromCharCode(parseInt(n))).join("");
+}
+
+function caesarDecrypt(text,shift){
+    return text.replace(/[A-Za-z]/g,c=>{
+        const base=c<='Z'?65:97;
+        return String.fromCharCode(mod(c.charCodeAt(0)-base-shift,26)+base);
+    });
+}
+
+function modInverse(a,m){
+    for(let x=1;x<m;x++){
+        if((a*x)%m===1) return x;
+    }
+    return null;
+}
+
+function affineDecrypt(text,a,b){
+    const inv=modInverse(a,26);
+    if(inv===null){
+        throw "Affine A value is invalid (not coprime with 26)";
+    }
+    return text.replace(/[A-Za-z]/g,c=>{
+        const base=c<='Z'?65:97;
+        const x=c.charCodeAt(0)-base;
+        return String.fromCharCode(mod(inv*(x-b),26)+base);
+    });
+}
+
+function beaufortDecrypt(text,key){
+    key=key.toUpperCase();
+    let result="",j=0;
+    for(let i=0;i<text.length;i++){
+        const c=text[i];
+        if(/[A-Za-z]/.test(c)){
+            const base=c<='Z'?65:97;
+            const t=c.toUpperCase().charCodeAt(0)-65;
+            const k=key[j%key.length].charCodeAt(0)-65;
+            result+=String.fromCharCode(mod(k-t,26)+base);
+            j++;
+        } else result+=c;
+    }
+    return result;
+}
+
+function vigenereDecrypt(text,key){
+    key=key.toUpperCase();
+    let result="",j=0;
+    for(let i=0;i<text.length;i++){
+        const c=text[i];
+        if(/[A-Za-z]/.test(c)){
+            const base=c<='Z'?65:97;
+            const t=c.toUpperCase().charCodeAt(0)-65;
+            const k=key[j%key.length].charCodeAt(0)-65;
+            result+=String.fromCharCode(mod(t-k,26)+base);
+            j++;
+        } else result+=c;
+    }
+    return result;
+}
+
+function decodeAll(){
+    try{
+        const asciiInput=document.getElementById("asciiInput").value.trim();
+        const order=document.getElementById("orderInput").value.split(",").map(x=>x.trim());
+        const shift=parseInt(document.getElementById("caesarShift").value);
+        const a=parseInt(document.getElementById("affineA").value);
+        const b=parseInt(document.getElementById("affineB").value);
+        const beaufortKey=document.getElementById("beaufortKey").value;
+        const vigenereKey=document.getElementById("vigenereKey").value;
+
+        let text=asciiDecode(asciiInput);
+        let log="Step 1 (ASCII):\n"+text+"\n\n";
+
+        for(let i=0;i<order.length;i++){
+            switch(order[i].toLowerCase()){
+                case "caesar":
+                    text=caesarDecrypt(text,shift);
+                    log+=`Step ${i+2} (Caesar):\n${text}\n\n`;
+                    break;
+                case "affine":
+                    text=affineDecrypt(text,a,b);
+                    log+=`Step ${i+2} (Affine):\n${text}\n\n`;
+                    break;
+                case "beaufort":
+                    text=beaufortDecrypt(text,beaufortKey);
+                    log+=`Step ${i+2} (Beaufort):\n${text}\n\n`;
+                    break;
+                case "vigenere":
+                case "vigenère":
+                    text=vigenereDecrypt(text,vigenereKey);
+                    log+=`Step ${i+2} (Vigenère):\n${text}\n\n`;
+                    break;
+                default:
+                    throw "Unknown cipher in order list.";
+            }
+        }
+
+        document.getElementById("output").textContent=log;
+    }
+    catch(err){
+        document.getElementById("output").textContent="ERROR:\n"+err;
+    }
+}
+</script>
+
+</body>
+</html>
