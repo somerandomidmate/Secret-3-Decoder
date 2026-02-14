@@ -3,13 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <title>Secret #3 Cipher Decoder</title>
+
 <style>
+
+/* === LOAD CUSTOM FONTS === */
+@font-face {
+    font-family: 'ComicAngularBold';
+    src: url('fonts/ComicNeue-Angular-Bold.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'ComicAngularRegular';
+    src: url('fonts/ComicNeue-Angular-Regular.ttf') format('truetype');
+}
+
+/* === BASE STYLES === */
 body {
     background:#141414;
     color:#ffffff;
-    font-family: monospace;
+    font-family: 'ComicAngularRegular', sans-serif;
     padding:20px;
 }
+
+h2 {
+    font-family: 'ComicAngularBold', sans-serif;
+    font-size: 32px;
+}
+
 input, textarea, select, button {
     width:100%;
     margin:6px 0;
@@ -17,18 +37,22 @@ input, textarea, select, button {
     background:#111;
     color:#ffffff;
     border:1px solid rgb(255, 255, 255);
-    font-family:monospace;
+    font-family:'ComicAngularRegular', sans-serif;
 }
+
 button:hover {
     background:#002222;
 }
+
 .output {
     background:#000;
     padding:15px;
     margin-top:15px;
     white-space:pre-wrap;
     border:1px solid #ffffff;
+    font-family:'ComicAngularRegular', sans-serif;
 }
+
 </style>
 </head>
 <body>
